@@ -2,8 +2,7 @@ import "@nomicfoundation/hardhat-toolbox";
 import dotenv from "dotenv";
 import "hardhat-deploy";
 import "hardhat-ignore-warnings";
-import { HardhatUserConfig, extendProvider } from "hardhat/config";
-import { task } from "hardhat/config";
+import { HardhatUserConfig, extendProvider, task } from "hardhat/config";
 import type { NetworkUserConfig } from "hardhat/types";
 
 import CustomProvider from "./CustomProvider";
