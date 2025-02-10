@@ -1,3 +1,4 @@
+import { run } from "hardhat";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 
@@ -16,20 +17,23 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log(`MyConfidentialERC20 CONTRACT DEPLOYED: `, deployed.address);
 
   // console.log(`Transaction hash: `, deployed.transactionHash);
-  // // Wait for 5 block confirmations before verifying
+  // Wait for 5 block confirmations before verifying
   // const txReceipt = await hre.ethers.provider.getTransactionReceipt(deployed.transactionHash!);
   // if (txReceipt) {
   //   console.log("Waiting for 5 confirmations...");
   //   await hre.ethers.provider.waitForTransaction(deployed.transactionHash!, 5);
   // }
 
-  // // Add verification
-  // await run("verify:verify", {
-  //   address: deployed.address,
-  //   constructorArguments: args,
-  // });
+  console.log("Waiting 60 seconds before verification...");
+  await new Promise((resolve) => setTimeout(resolve, 60000));
 
-  // console.log(`MyConfidentialERC20 CONTRACT VERIFIED`);
+  // Add verification
+  await run("verify:verify", {
+    address: deployed.address,
+    constructorArguments: args,
+  });
+
+  console.log(`MyConfidentialERC20 CONTRACT VERIFIED`);
 };
 export default func;
 func.id = "deploy_confidentialERC20"; // id required to prevent reexecution
