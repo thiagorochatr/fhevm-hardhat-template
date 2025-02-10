@@ -3,12 +3,14 @@
 pragma solidity ^0.8.24;
 
 import "fhevm/lib/TFHE.sol";
-import "fhevm/config/ZamaFHEVMConfig.sol";
-// import "fhevm-contracts/contracts/token/ERC20/extensions/ConfidentialERC20Mintable.sol";
+import { SepoliaZamaFHEVMConfig } from "fhevm/config/ZamaFHEVMConfig.sol";
+import { GatewayCaller, Gateway } from "fhevm/gateway/GatewayCaller.sol";
+import { SepoliaZamaGatewayConfig } from "fhevm/config/ZamaGatewayConfig.sol";
 
-contract MyConfidentialERC20 is SepoliaZamaFHEVMConfig {
+contract MyConfidentialERC20 is SepoliaZamaFHEVMConfig, SepoliaZamaGatewayConfig, GatewayCaller {
     euint64 private _number;
     euint64 private _sum;
+    uint64 public _numberDecrypted;
 
     constructor(uint64 number_) {
         _number = TFHE.asEuint64(number_);
@@ -26,5 +28,28 @@ contract MyConfidentialERC20 is SepoliaZamaFHEVMConfig {
     function doubleNumber() public {
         _sum = TFHE.add(_number, _number);
         TFHE.allowThis(_sum); // Permite acesso ao resultado da soma
+    }
+
+    function requestUint64(uint64 input1) public {
+        // @note input1 é como se fosse um index, por exemplo _votes[input1], pega o vote do index input1
+        uint256[] memory cts = new uint256[](1);
+        cts[0] = Gateway.toUint256(_sum);
+        uint256 requestID = Gateway.requestDecryption(
+            cts,
+            this.callbackUint64.selector,
+            0,
+            block.timestamp + 100,
+            false
+        );
+        addParamsUint256(requestID, input1);
+    }
+
+    function callbackUint64(uint256 requestID, uint64 decryptedInput) public onlyGateway returns (uint64) {
+        uint256[] memory params = getParamsUint256(requestID);
+        unchecked {
+            uint64 result = decryptedInput;
+            _numberDecrypted = result;
+            return result;
+        }
     }
 }
