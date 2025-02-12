@@ -13,20 +13,25 @@ interface IVotingSystem is IIdentityManager {
         Revealed
     }
 
+    struct Candidate {
+        string name;
+        euint64 votes;
+    }
+
     struct Vote {
         uint256 endBlock;
-        string description;
-        string[] candidates;
         euint64 encryptedResult;
         uint256 result;
         uint256 voteCount;
+        string description;
         VoteState state;
     }
 
-    event VoteCasted(uint256 indexed voteId);
     event VoteCreated(uint256 indexed voteId);
+    event VoteCasted(uint256 indexed voteId);
     event VoteRevealRequested(uint256 indexed voteId);
     event VoteRevealed(uint256 indexed voteId);
+    event WinnerDeclared(uint256 voteId, string winnerName, uint64 totalVotes);
 
     error AlreadyVoted();
     error VoteDoesNotExist();
@@ -41,9 +46,7 @@ interface IVotingSystem is IIdentityManager {
 
     function hasVoted(uint256 voteId, bytes32 voterId) external view returns (bool);
 
-    function isVotePassed(uint256 voteId) external view returns (bool);
+    function requestWinnerDecryption(uint256 voteId) external;
 
-    function requestRevealVote(uint256 voteId) external;
-
-    function revealVote(uint256 requestId, uint256 encryptedResult) external;
+    function callbackDecryption(uint256 voteId, uint64 candidateIndex, uint64 decryptedVoteCount) external;
 }
