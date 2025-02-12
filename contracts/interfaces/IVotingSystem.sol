@@ -46,7 +46,7 @@ interface IVotingSystem is IIdentityManager {
 
     function hasVoted(uint256 voteId, bytes32 voterId) external view returns (bool);
 
-    function requestWinnerDecryption(uint256 voteId) external;
+    // function requestWinnerDecryption(uint256 voteId) external;
 
-    function callbackDecryption(uint256 voteId, uint64 candidateIndex, uint64 decryptedVoteCount) external;
+    // function callbackDecryption(uint256 voteId, uint64 candidateIndex, uint64 decryptedVoteCount) external;
 }

@@ -33,13 +33,8 @@ contract VotingSystem is
     // Counter for generating unique vote IDs
     mapping(uint256 => uint256) public decryptedVotesReceived;
 
-    euint64 private _number;
-    euint64 private _sum;
     uint64 public _numberDecrypted;
-    constructor(uint64 number_, address[] memory allowedVoters) IdentityManager(allowedVoters) Ownable(msg.sender) {
-        _number = TFHE.asEuint64(number_);
-        TFHE.allowThis(_number); // Permite o contrato acessar o valor criptografado
-    }
+    constructor(address[] memory allowedVoters) IdentityManager(allowedVoters) Ownable(msg.sender) {}
 
     function createVote(
         uint256 endBlock,
@@ -69,22 +64,23 @@ contract VotingSystem is
         Vote storage vote = _getVote(voteId);
         if (block.number > vote.endBlock) revert VoteClosed();
 
-        // Convert and validate the encrypted vote
+        // Converter o voto encriptado para euint64
         euint64 candidateIndex = TFHE.asEuint64(encryptedSupport, supportProof);
 
-        ebool isCandidateIndexValid = TFHE.lt(candidateIndex, TFHE.asEuint64(_voteCandidateCount[voteId]));
-        require(TFHE.isSenderAllowed(isCandidateIndexValid), "Invalid candidate.");
-
-        // Increment the vote count for this specific vote
+        // Incrementar o contador de votos
         vote.voteCount++;
 
-        // Update vote tallies if vote is valid
-        _candidates[voteId][candidateIndex].votes = TFHE.add(
-            _candidates[voteId][candidateIndex].votes,
-            TFHE.asEuint64(1)
-        );
+        // Atualizar os votos do candidato
+        // Note que não podemos validar o índice aqui pois está encriptado
+        for (uint256 i = 0; i < _voteCandidateCount[voteId]; i++) {
+            // Criar uma comparação encriptada
+            ebool isCandidate = TFHE.eq(candidateIndex, TFHE.asEuint64(i));
 
-        TFHE.allow(_candidates[voteId][candidateIndex].votes, address(this));
+            // Se isCandidate for verdadeiro, adiciona 1 voto, senão adiciona 0
+            euint64 voteValue = TFHE.select(isCandidate, TFHE.asEuint64(1), TFHE.asEuint64(0));
+
+            _candidates[voteId][i].votes = TFHE.add(_candidates[voteId][i].votes, voteValue);
+        }
 
         emit VoteCasted(voteId);
     }
@@ -95,19 +91,6 @@ contract VotingSystem is
 
     function hasVoted(uint256 voteId, bytes32 voterId) external view returns (bool) {
         return _castedVotes[voteId][voterId];
-    }
-
-    function number() public view returns (euint64) {
-        return _number;
-    }
-
-    function getDoubleNumber() public view returns (euint64) {
-        return _sum;
-    }
-
-    function doubleNumber() public {
-        _sum = TFHE.add(_number, _number);
-        TFHE.allowThis(_sum); // Permite acesso ao resultado da soma
     }
 
     function requestWinnerDecryption(uint256 voteId) external {
@@ -121,14 +104,25 @@ contract VotingSystem is
         uint256[] memory cts = new uint256[](1);
 
         for (uint256 i = 0; i < numCandidates; i++) {
-            uint256;
             cts[0] = Gateway.toUint256(_candidates[voteId][i].votes);
 
-            Gateway.requestDecryption(cts, this.callbackDecryption.selector, voteId, i, block.timestamp + 100, false);
+            uint256 requestId = Gateway.requestDecryption(
+                cts,
+                this.callbackDecryption.selector,
+                0,
+                block.timestamp + 100,
+                false
+            );
+            addParamsUint256(requestId, voteId);
+            addParamsUint256(requestId, i);
         }
     }
 
-    function callbackDecryption(uint256 voteId, uint64 candidateIndex, uint64 decryptedVoteCount) external onlyGateway {
+    function callbackDecryption(uint256 requestId, uint64 decryptedVoteCount) external onlyGateway {
+        uint256[] memory params = getParamsUint256(requestId);
+        uint256 voteId = params[0];
+        uint256 candidateIndex = params[1];
+
         decryptedVotes[voteId][candidateIndex] = decryptedVoteCount;
         decryptedVotesReceived[voteId]++;
 
@@ -151,7 +145,7 @@ contract VotingSystem is
             }
         }
 
-        emit WinnerDeclared(voteId, _candidates[voteId][winnerIndex], maxVotes);
+        emit WinnerDeclared(voteId, _candidates[voteId][winnerIndex].name, maxVotes);
     }
 
     function blockNumber() public view returns (uint256) {

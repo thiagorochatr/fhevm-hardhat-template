@@ -6,10 +6,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
 
-  const args = [
-    100,
-    [deployer, "0x76dCCc697DdE7D8AF30673c2Df86E14F0842975A", "0x803ca976530E2e3840Bcfc20a4Cffb41335A0502"],
-  ];
+  const args = [[deployer, "0x76dCCc697DdE7D8AF30673c2Df86E14F0842975A", "0x803ca976530E2e3840Bcfc20a4Cffb41335A0502"]];
 
   const deployed = await deploy("VotingSystem", {
     from: deployer,
