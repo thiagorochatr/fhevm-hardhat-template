@@ -66,6 +66,7 @@ contract VotingSystem is
 
         // Converter o voto encriptado para euint64
         euint64 candidateIndex = TFHE.asEuint64(encryptedSupport, supportProof);
+        TFHE.allowThis(candidateIndex);
 
         // Incrementar o contador de votos
         vote.voteCount++;
@@ -80,6 +81,7 @@ contract VotingSystem is
             euint64 voteValue = TFHE.select(isCandidate, TFHE.asEuint64(1), TFHE.asEuint64(0));
 
             _candidates[voteId][i].votes = TFHE.add(_candidates[voteId][i].votes, voteValue);
+            TFHE.allowThis(_candidates[voteId][i].votes);
         }
 
         emit VoteCasted(voteId);
