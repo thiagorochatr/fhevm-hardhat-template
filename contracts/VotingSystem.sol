@@ -6,13 +6,22 @@ import "fhevm/lib/TFHE.sol";
 import { SepoliaZamaFHEVMConfig } from "fhevm/config/ZamaFHEVMConfig.sol";
 import { GatewayCaller, Gateway } from "fhevm/gateway/GatewayCaller.sol";
 import { SepoliaZamaGatewayConfig } from "fhevm/config/ZamaGatewayConfig.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { IVotingSystem } from "./interfaces/IVotingSystem.sol";
+import { IdentityManager } from "./IdentityManager.sol";
 
-contract MyConfidentialERC20 is SepoliaZamaFHEVMConfig, SepoliaZamaGatewayConfig, GatewayCaller {
+contract VotingSystem is
+    IVotingSystem,
+    IdentityManager,
+    SepoliaZamaFHEVMConfig,
+    SepoliaZamaGatewayConfig,
+    GatewayCaller,
+    Ownable
+{
     euint64 private _number;
     euint64 private _sum;
     uint64 public _numberDecrypted;
-
-    constructor(uint64 number_) {
+    constructor(uint64 number_, address[] memory allowedVoters) IdentityManager(allowedVoters) Ownable(msg.sender) {
         _number = TFHE.asEuint64(number_);
         TFHE.allowThis(_number); // Permite o contrato acessar o valor criptografado
     }
@@ -28,6 +37,8 @@ contract MyConfidentialERC20 is SepoliaZamaFHEVMConfig, SepoliaZamaGatewayConfig
     function doubleNumber() public {
         _sum = TFHE.add(_number, _number);
         TFHE.allowThis(_sum); // Permite acesso ao resultado da soma
+        bytes32 voterId = verifyProofAndGetVoterId();
+        emit VoteCasted(voterId);
     }
 
     function requestUint64(uint64 input1) public {

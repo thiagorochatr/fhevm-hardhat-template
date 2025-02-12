@@ -2,19 +2,19 @@ import { run } from "hardhat";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 
-const args = [100];
-
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
 
-  const deployed = await deploy("MyConfidentialERC20", {
+  const args = [100, [deployer]];
+
+  const deployed = await deploy("VotingSystem", {
     from: deployer,
     args: args,
     log: true,
   });
 
-  console.log(`MyConfidentialERC20 CONTRACT DEPLOYED: `, deployed.address);
+  console.log(`VotingSystem CONTRACT DEPLOYED: `, deployed.address);
 
   // console.log(`Transaction hash: `, deployed.transactionHash);
   // Wait for 5 block confirmations before verifying
@@ -25,7 +25,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // }
 
   console.log("Waiting 60 seconds before verification...");
-  await new Promise((resolve) => setTimeout(resolve, 60000));
+  await new Promise((resolve) => setTimeout(resolve, 30000));
 
   // Add verification
   await run("verify:verify", {
@@ -33,8 +33,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     constructorArguments: args,
   });
 
-  console.log(`MyConfidentialERC20 CONTRACT VERIFIED`);
+  console.log(`VotingSystem CONTRACT VERIFIED`);
 };
 export default func;
-func.id = "deploy_confidentialERC20"; // id required to prevent reexecution
-func.tags = ["MyConfidentialERC20"];
+func.id = "deploy_votingSystem"; // id required to prevent reexecution
+func.tags = ["VotingSystem"];
