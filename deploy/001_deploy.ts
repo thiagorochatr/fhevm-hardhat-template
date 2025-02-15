@@ -2,7 +2,7 @@ import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-  console.log("OLHA EU AQUI");
+  console.log("HERE FIRST");
   await new Promise((resolve) => setTimeout(resolve, 1000));
 };
 

@@ -1,13 +1,13 @@
 {
-  "name": "@zama-ai/fhevm-hardhat-template",
-  "description": "fhEVM hardhat template",
+  "name": "@thiagorochatr/voting-system",
+  "description": "Voting System",
   "version": "1.0.0",
   "engines": {
     "node": ">=20.0.0"
   },
   "author": {
-    "name": "zama-ai",
-    "url": "https://github.com/zama-ai"
+    "name": "thiagorochatr",
+    "url": "https://github.com/thiagorochatr"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
@@ -56,6 +56,7 @@
     "sqlite3": "^5.1.7",
     "ts-generator": "^0.1.1",
     "ts-node": "^10.9.1",
+    "tsx": "^4.19.2",
     "typechain": "^8.2.0",
     "typescript": "^5.5.4",
     "typescript-eslint": "^8.0.1",
@@ -91,7 +92,8 @@
     "test": "hardhat test --network hardhat",
     "coverage": "hardhat coverage",
     "deploy-sepolia": "hardhat deploy --network sepolia",
-    "mint-sepolia": "hardhat mint --amount 42 --network sepolia"
+    "mint-sepolia": "hardhat mint --amount 42 --network sepolia",
+    "execute-offchain": "tsx off-chain/src/server.ts"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^5.0.2"

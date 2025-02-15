@@ -6,7 +6,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
 
-  const args = [[deployer, "0x76dCCc697DdE7D8AF30673c2Df86E14F0842975A", "0x803ca976530E2e3840Bcfc20a4Cffb41335A0502"]];
+  /// wallets that will be allowed to vote
+  const args = [[deployer, process.env.WALLET_TEST_1!, process.env.WALLET_TEST_2!]];
 
   const deployed = await deploy("VotingSystem", {
     from: deployer,
@@ -16,15 +17,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   console.log(`VotingSystem CONTRACT DEPLOYED: `, deployed.address);
 
-  // console.log(`Transaction hash: `, deployed.transactionHash);
-  // Wait for 5 block confirmations before verifying
-  // const txReceipt = await hre.ethers.provider.getTransactionReceipt(deployed.transactionHash!);
-  // if (txReceipt) {
-  //   console.log("Waiting for 5 confirmations...");
-  //   await hre.ethers.provider.waitForTransaction(deployed.transactionHash!, 5);
-  // }
-
-  console.log("Waiting 60 seconds before verification...");
+  console.log("Waiting 30 seconds before verification...");
   await new Promise((resolve) => setTimeout(resolve, 30000));
 
   // Add verification
